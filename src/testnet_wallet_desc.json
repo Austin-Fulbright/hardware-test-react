@@ -1,0 +1,44 @@
+{
+    "variant": "wsh(multi(k))",
+    "sorted": false,
+    "threshold": 2,
+    "signers": [
+        {
+            "fingerprint": {
+                "type": "Buffer",
+                "data": [
+                    245,
+                    126,
+                    198,
+                    93
+                ]
+            },
+            "derivation": [
+                2147483696,
+                2147483649,
+                2147483748,
+                2147483650
+            ],
+            "xpub": "tpubDFc9Mm4tw6EkgR4YTC1GrU6CGEd9yw7KSBnSssL4LXAXh89D4uMZigRyv3csdXbeU3BhLQc4vWKTLewboA1Pt8Fu6fbHKu81MZ6VGdc32eM"
+        },
+        {
+            "fingerprint": {
+                "type": "Buffer",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    3
+                ]
+            },
+            "derivation": [
+                2147483696,
+                2147483649,
+                2147483748,
+                2147483650
+            ],
+            "xpub": "tpubDErWN5qfdLwYE94mh12oWr4uURDDNKCjKVhCEcAgZ7jKnnAwq5tcTF2iEk3VuznkJuk2G8SCHft9gS6aKbBd18ptYWPqKLRSTRQY7e2rrDj"
+        }
+    ]
+}
+

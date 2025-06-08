@@ -1,139 +1,272 @@
+// App.tsx
 import React, { useState } from "react";
 import "./App.css";
-
-// Pull in exactly what you need from jadets:
 import {
   Jade,
   JadeInterface,
   SerialTransport,
   base64ToBytes,
   bytesToBase64,
+  MultisigDescriptor,
+  SignerDescriptor, 
+  ReceiveOptions,
 } from "jadets";
+/*
+const testDescriptor_unf: MultisigDescriptor =  
+{
 
-const PSBT_STRING = `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`;
+    "variant": "sh(multi(k))",
+    "sorted": false,
+    "threshold": 2,
+    "signers": [
+        {
+            "fingerprint": {
+                "type": "Buffer",
+                "data": [
+                    245,
+                    126,
+                    198,
+                    93
+                ]
+            },
+            "derivation": [
+                2147483693,
+                2147483649,
+                2147483748
+            ],
+            "xpub": "tpubDDQubdBx9cbwQtdcRTisKF7wVCwHgHewhU7wh77VzCi62Q9q81qyQeLoZjKWZ62FnQbWU8k7CuKo2A21pAWaFtPGDHP9WuhtAx4smcCxqn1",
+            "path": []
+        },
+        {
+            "fingerprint": {
+                "type": "Buffer",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    1
+                ]
+            },
+            "derivation": [
+                2147483693,
+                2147483649,
+                2147483748
+            ],
+            "xpub": "tpubDDinbKDXyddTUKcX6mv936Ux5utCJteq5S6EEKhfpM8CqN2rMAcccv6GecsB3cPt8eGL4e4K2eaZ9Jis9TGf7mbwBsRTN7ngnFR7yJZxBKC",
+            "path": []
+        }
+    ]
+}
+*/
+const testDescriptor: MultisigDescriptor = {
+	variant: "wsh(multi(k))",
+	sorted: false,
+	threshold: 2,
+	signers: [
+		{
+			fingerprint: new Uint8Array([245,126,198,93]),
+			derivation: [
+				2147483696, 2147483649, 2147483748, 2147483650
+			],
+
+			xpub: "tpubDFc9Mm4tw6EkgR4YTC1GrU6CGEd9yw7KSBnSssL4LXAXh89D4uMZigRyv3csdXbeU3BhLQc4vWKTLewboA1Pt8Fu6fbHKu81MZ6VGdc32eM",
+			path: []       // ← **must include** 
+		},
+		{
+			fingerprint: new Uint8Array([0,0,0,3]),
+			derivation: [
+				2147483696, 2147483649, 2147483748, 2147483650
+			],
+
+			xpub: "tpubDErWN5qfdLwYE94mh12oWr4uURDDNKCjKVhCEcAgZ7jKnnAwq5tcTF2iEk3VuznkJuk2G8SCHft9gS6aKbBd18ptYWPqKLRSTRQY7e2rrDj",
+			path: []       // ← **must include** 
+		},
+	],
+};
 
 function App() {
   const [status, setStatus] = useState<string>("Disconnected");
-  const [version, setVersion] = useState<any | null>(null);
+  const [version, setVersion] = useState<any>(null);
+  const [messageSig, setMessageSig] = useState<string | null>(null);
   const [jadeClient, setJadeClient] = useState<Jade | null>(null);
-  const [signedpsbt, setSignedpsbt] = useState<string | null>(null);
+  const [multisigDescriptor, setMultisigDescriptor] = useState<MultisigDescriptor | null>(null);
+  const [foundName, setFoundName] = useState<string | null | undefined>(null);
 
-  // When the user clicks “Connect to Jade”
   const connect = async () => {
-    try {
-      setStatus("Instantiating transport…");
-      // 1. SerialTransport will itself do all the WebSerial work internally.
-      const transport = new SerialTransport({});
-
-      setStatus("Building JadeInterface…");
-      const ijade = new JadeInterface(transport);
-
-      setStatus("Creating Jade client…");
-      const client = new Jade(ijade);
-
-      setStatus(
-        "Calling client.connect() (SerialTransport will request port)…"
-      );
-      // 2. This single call asks for permission, opens port at 115200, does any handshakes.
-      await client.connect();
-
-      setJadeClient(client);
-      setStatus("Connected to Jade");
-    } catch (err: any) {
-      console.error(err);
-      setStatus("Connect failed: " + (err.message || err.toString()));
-    }
+    setStatus("Connecting…");
+    const transport = new SerialTransport({});
+    const client = new Jade(new JadeInterface(transport));
+    await client.connect();
+    setJadeClient(client);
+    setStatus("Connected");
   };
 
-  // Authenticate button handler
   const authenticate = async () => {
     if (!jadeClient) return;
-
-    try {
-      setStatus("Authenticating Jade…");
-
-      const httpRequestFn = async (params: any): Promise<{ body: any }> => {
-        const url = params.urls[0];
-        const response = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(params.data),
-        });
-        if (!response.ok) {
-          throw new Error("HTTP request failed in authUser");
-        }
-        return { body: await response.json() };
-      };
-
-      // Replace "testnet" with "mainnet" if you're on mainnet
-      const unlockResult = await jadeClient.authUser("testnet", httpRequestFn);
-      if (unlockResult !== true) {
-        throw new Error("Failed to unlock Jade device");
-      }
-
-      setStatus("Jade authenticated");
-    } catch (err: any) {
-      console.error(err);
-      setStatus("Authentication failed: " + (err.message || err.toString()));
-    }
+    setStatus("Authenticating…");
+    const httpRequestFn = async (params: any): Promise<{ body: any }> => {
+      const response = await fetch(params.urls[0], {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params.data),
+      });
+      return { body: await response.json() };
+    };
+    const ok = await jadeClient.authUser("testnet", httpRequestFn);
+    setStatus(ok ? "Unlocked" : "Auth failed");
   };
 
-  // Ping button handler
   const ping = async () => {
     if (!jadeClient) return;
-    try {
-      setStatus("Pinging Jade…");
-      const p = await jadeClient.ping();
-      setStatus("Ping response: " + p);
-    } catch (err: any) {
-      console.error(err);
-      setStatus("Ping failed: " + (err.message || err.toString()));
-    }
+    setStatus("Pinging…");
+    const p = await jadeClient.ping();
+    setStatus("Ping=" + p);
   };
 
-  // Get Version button handler
   const getVersion = async () => {
     if (!jadeClient) return;
-    try {
-      setStatus("Fetching version info…");
-      const info = await jadeClient.getVersionInfo();
-      setVersion(info);
-      setStatus("Version info fetched");
-    } catch (err: any) {
-      console.error(err);
-      setStatus("Failed to get version: " + (err.message || err.toString()));
-    }
+    setStatus("Fetching version…");
+    const info = await jadeClient.getVersionInfo();
+    setVersion(info);
+    setStatus("Version fetched");
   };
 
-  // Sign Transaction button handler
-  const signTransaction = async () => {
+
+  const registerMultisigWallet = async () => {
     if (!jadeClient) return;
-    try {
-      setStatus("Signing PSBT…");
-      const PSBT_ARRAY = base64ToBytes(PSBT_STRING);
-      const signed = await jadeClient.signPSBT("testnet", PSBT_ARRAY);
-      const psbtString = bytesToBase64(signed);
-      setSignedpsbt(psbtString);
-      console.log("Signed PSBT (base64):", psbtString);
-      setStatus("PSBT signed successfully");
-    } catch (err: any) {
-      console.error(err);
-      setStatus("Failed to sign PSBT: " + (err.message || err.toString()));
-    }
+    setStatus("Checking multisig…");
+    //let name = await jadeClient.getMultiSigName("testnet", testDescriptor);
+    //if (!name) {
+	//
+	const nameM = "flaby";
+      await jadeClient.registerMultisig("testnet", nameM, testDescriptor);
+      setStatus("Registered as " + "bingo");
+
+	  const walletd = await jadeClient.getRegisteredMultisig(nameM);
+	  console.log(walletd);
+	  const desc = walletd.descriptor;
+	  if (
+		  desc.variant === "sh(multi(k))" ||
+		  desc.variant === "wsh(multi(k))" ||
+	  desc.variant === "sh(wsh(multi(k)))"
+	  ) {
+		  setMultisigDescriptor(desc);
+	  } else {
+		  throw new Error(`Unknown variant: ${desc.variant}`);
+	  }
+    //} else {
+     // setStatus("Already registered: " + name);
+    //}
+  };
+
+  const findWalletName = async () => {
+    if (!jadeClient) return;
+    setStatus("finding multisg wallet name…");
+
+	if (!multisigDescriptor) return; 
+
+	const expectedName = "flaby";
+	const actualName = await jadeClient.getMultiSigName("testnet", multisigDescriptor);
+      setStatus("found name or didnt find name lets see...");
+	  console.log("expected: ", expectedName);
+	  console.log("actual: ", actualName);
+	  setFoundName(actualName);
+
+    //} else {
+     // setStatus("Already registered: " + name);
+    //}
+  };
+//== Help me implement this function 
+  //const getPathsFromDesi();
+  function parseBip32Path(path_i: string): number[] {
+	  let path = path_i;
+	  if (path.startsWith("m/")) {
+		  path = path.substring(2);
+	  } else if (path.startsWith("m")) {
+		  path = path.substring(1);
+		  if (path.startsWith("/")) {
+			  path = path.substring(1);
+		  }
+	  }
+	  const segments = path.split("/");
+	  const result: number[] = [];
+	  for (const segment of segments) {
+		  // Check if the segment is hardened (ends with "'" or "h")
+		  let hardened = false;
+		  let numStr = segment;
+		  if (segment.endsWith("'") || segment.endsWith("h")) {
+			  hardened = true;
+			  numStr = segment.slice(0, -1);
+		  }
+		  const index = parseInt(numStr, 10);
+		  if (isNaN(index)) {
+			  throw new Error(`Invalid path segment: ${segment}`);
+		  }
+		  // Hardened index = index + 0x80000000 (2^31)
+		  result.push(index + (hardened ? 0x80000000 : 0));
+	  }
+	  return result;
+  }
+  function extractPathSuffix(
+	  fullPathStr: string,
+	  baseDerivation: number[]
+  ): number[] {
+	  // 1. parse the full path
+	  const fullPath = parseBip32Path(fullPathStr);
+
+	  // 2. ensure the base matches the start of the full
+	  if (fullPath.length < baseDerivation.length ||
+		  !baseDerivation.every((v,i) => v === fullPath[i])) {
+		  throw new Error(
+			  `Path "${fullPathStr}" does not extend base derivation [${baseDerivation.join(",")}]`
+		  );
+	  }
+
+	  // 3. the suffix is whatever remains after the base
+	  return fullPath.slice(baseDerivation.length);
+  }
+
+  const getMultisigAddress = async () => {
+	const bip32p =  "m/48'/1'/100'/2'/0/0"
+	const expectedAddress = "tb1qhgj3fnwn50pq966rjnj4pg8uz9ktsd8nge32qxd73ffvvg636p5q54g7m0" 
+    if (!jadeClient) return;
+    setStatus("finding multisg wallet name…");
+
+	if (!multisigDescriptor) return; 
+
+	if (!foundName) return;
+
+	const desi = await jadeClient.getRegisteredMultisig(foundName);
+	const desi_disc = desi.descriptor;
+
+	const paths = desi_disc.signers.map((signer) => {
+		return extractPathSuffix(bip32p, signer.derivation);	
+	});
+	console.log("paths: ", paths);
+
+	const opts: ReceiveOptions = {
+		paths: paths,
+		multisigName: foundName
+	}
+	const multisigAdd = await jadeClient.getReceiveAddress("testnet", opts); 
+	console.log("multisig address: ",multisigAdd);
+
+
+    //} else {
+     // setStatus("Already registered: " + name);
+    //}
   };
 
   return (
     <div className="App">
-      <h1>Jade WebSerial Demo (via SerialTransport)</h1>
-      <p>
-        <strong>Status:</strong> {status}
-      </p>
+      <h1>Jade Demo</h1>
+      <p><strong>Status:</strong> {status}</p>
 
       <button onClick={connect} disabled={!!jadeClient}>
-        Connect to Jade
+        Connect
       </button>
       <button onClick={authenticate} disabled={!jadeClient}>
-        Authenticate
+        Unlock
       </button>
       <button onClick={ping} disabled={!jadeClient}>
         Ping
@@ -141,40 +274,27 @@ function App() {
       <button onClick={getVersion} disabled={!jadeClient}>
         Get Version
       </button>
-      <button onClick={signTransaction} disabled={!jadeClient}>
-        Sign Transaction
+      <button onClick={registerMultisigWallet} disabled={!jadeClient}>
+        Register/FIND Multisig
+      </button>
+      <button onClick={findWalletName} disabled={!jadeClient}>
+        Register/FIND Multisig
+      </button>
+
+      <button onClick={getMultisigAddress} disabled={!jadeClient}>
+       get multisig address 
       </button>
 
       {version && (
-        <pre
-          style={{
-            textAlign: "left",
-            margin: "1em auto",
-            padding: "0.5rem",
-            border: "1px solid #ccc",
-            borderRadius: 4,
-            maxWidth: 600,
-            backgroundColor: "#f9f9f9",
-          }}
-        >
+        <pre style={{ textAlign: "left", padding: 8 }}>
           {JSON.stringify(version, null, 2)}
         </pre>
       )}
 
-      {signedpsbt && (
-        <div
-          style={{
-            textAlign: "left",
-            margin: "1em auto",
-            padding: "0.5rem",
-            border: "1px solid #4caf50",
-            borderRadius: 4,
-            maxWidth: 600,
-            backgroundColor: "#f1f8e9",
-          }}
-        >
-          <strong>Signed PSBT (Base64):</strong>
-          <pre>{signedpsbt}</pre>
+      {messageSig && (
+        <div style={{ marginTop: 12 }}>
+          <strong>Signature:</strong>
+          <pre>{messageSig}</pre>
         </div>
       )}
     </div>
@@ -182,4 +302,5 @@ function App() {
 }
 
 export default App;
+
 
